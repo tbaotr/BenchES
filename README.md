@@ -11,4 +11,6 @@ Install MuJoCo in [this repo](https://github.com/openai/mujoco-py)
 
 ### Run
 
+`bash run_[es, ges, pes, pges].sh`
+
 ### Visualize

@@ -12,12 +12,13 @@ from utils import CSVLogger
 
 def train():
     assert params['env_name'] in ['HalfCheetah-v2', 'Ant-v2', 'Swimmer-v2', 'Hopper-v2', 'Walker2d-v2', 'Humanoid-v2']
-    assert params['std_name'] in ['es', 'ges']
+    assert params['stg_name'] in ['es', 'ges']
     assert params['optim'] in ['bgd', 'sgd', 'adam']
     assert params['policy'] in ['linear']
     assert params['init_weight'] in ['zero', 'uniform']
     assert params['obs_norm'] in ['meanstd', 'no']
-    assert params['fit_norm'] in ['div_std', 'z_norm', 'rank', 'no']
+    assert params['fit_norm'] in ['div_std', 'z_score', 'rank', 'no']
+    assert not params['pop_size'] & 1
 
     problem = get_problem("gym", params)
     solver = get_strategy(problem.params)
@@ -54,16 +55,16 @@ def train():
 if __name__ == '__main__':
     
     parser = argparse.ArgumentParser()
-    parser.add_argument('--env_name', type=str, default='HalfCheetah-v2')
+    parser.add_argument('--env_name', type=str, default='Ant-v2')
     parser.add_argument('--T', type=int, default=1000)
     parser.add_argument('--K', type=int, default=1000)
-    parser.add_argument('--max_iters', type=int, default=100)
+    parser.add_argument('--max_iters', type=int, default=600)
     parser.add_argument('--max_steps', type=int, default=100)
 
     parser.add_argument('--stg_name', type=str, default='es')
-    parser.add_argument('--pop_size', type=int, default=20)
-    parser.add_argument('--lrate', type=float, default=0.003)
-    parser.add_argument('--sigma', type=float, default=0.05)
+    parser.add_argument('--pop_size', type=int, default=100)
+    parser.add_argument('--lrate', type=float, default=0.001)
+    parser.add_argument('--sigma', type=float, default=0.02)
 
     parser.add_argument('--alpha', type=float, default=0.5)
     parser.add_argument('--sub_dims', type=int, default=1)
@@ -74,14 +75,14 @@ if __name__ == '__main__':
     parser.add_argument('--obs_norm', type=str, default='meanstd')
     parser.add_argument('--fit_norm', type=str, default='div_std')
 
-    parser.add_argument('--seed', type=int, default=0)
+    parser.add_argument('--seed', type=int, default=2020)
     parser.add_argument('--num_worker', type=int, default=4)
     parser.add_argument('--log_every', type=int, default=1)
     parser.add_argument('--save_dir', type=str, default='./log')
     args = parser.parse_args()
     params = vars(args)
 
-    expr_name = "env_{}-stg_{}-lr_{}-sig_{}-pop_{}-T_{}-K_{}-al_{}-sub_{}-opt_{}-pol_{}-init_{}-obs_{}".format(
+    expr_name = "env_{}-stg_{}-lr_{}-sig_{}-pop_{}-T_{}-K_{}-al_{}-sub_{}-opt_{}-pol_{}-init_{}-obs_{}-fit_{}".format(
             args.env_name,
             args.stg_name,
             args.lrate,
@@ -95,6 +96,7 @@ if __name__ == '__main__':
             args.policy,
             args.init_weight,
             args.obs_norm,
+            args.fit_norm,
     )
 
     save_dir = os.path.join(args.save_dir, expr_name, 'seed_{}'.format(args.seed))

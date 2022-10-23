@@ -21,7 +21,7 @@ class GuidedES(object):
         else:
             U, _ = np.linalg.qr(self.grad_buffer.grads.T)
             a = np.sqrt(self.params['alpha'] / self.params['full_dims'])
-            c = np.sqrt((1 - self.params['alpha']) / self.params['sub_dims'])
+            c = np.sqrt((1. - self.params['alpha']) / self.params['sub_dims'])
             eps1 = a * self.rng.randn(self.params['pop_size']//2, self.params['full_dims'])
             eps2 = c * self.rng.randn(self.params['pop_size']//2, self.params['sub_dims']) @ U.T
             eps = eps1 + eps2

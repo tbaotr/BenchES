@@ -5,7 +5,7 @@ def divide_std(x):
     return x / (x.std() + 1e-8)
 
 
-def compute_z_norm(x):
+def compute_z_score(x):
     return (x - x.mean()) / (x.std() + 1e-8)
 
 

@@ -1,5 +1,4 @@
-import ray
-import gym
+import ray, gym
 import numpy as np
 from utils import get_policy, get_obs_norm
 
@@ -11,7 +10,7 @@ class Worker(object):
 
         self.policy = get_policy(params)
 
-    def do_rollout(self, vec, env_pack, roll_len):
+    def do_rollout(self, vec, env_pack, roll_len, train=True):
 
         self.policy.set_weight(vec)
 
@@ -22,7 +21,7 @@ class Worker(object):
         total_reward = 0
         obs = env_pack[3]
         for steps in range(1, roll_len + 1):
-            n_obs = obs_norm.get(obs)
+            n_obs = obs_norm(obs, update=train)
             action = self.policy.evaluate(n_obs)
             action = np.clip(action, env.action_space.low[0], env.action_space.high[0])
             action = action.reshape(len(action), )
@@ -42,14 +41,16 @@ class Master(object):
         self.params = params
         self.rng = np.random.RandomState(params['seed'])
 
-        self.env_buffer = [()] * self.params['pop_size']
-        self.reset(np.arange(self.params['pop_size']))
-
         _env = gym.make(self.params['env_name'])
         self.params['ob_dim'] = _env.observation_space.shape[0]
         self.params['ac_dim'] = _env.action_space.shape[0]
-        self.workers = [Worker.remote(self.params)] * self.params['num_worker']
+        self.workers = [Worker.remote(self.params) for _ in range(self.params['num_worker'])]
         
+        self.obs_norm = get_obs_norm(self.params)
+
+        self.env_buffer = [()] * self.params['pop_size']
+        self.reset(np.arange(self.params['pop_size']))
+
         self.total_steps = 0
 
     def reset(self, idxs):
@@ -60,7 +61,8 @@ class Master(object):
             env = gym.make(self.params['env_name'])
             env._max_episode_steps = self.params['T']
             env.seed(int(new_seeds[i]))
-            obs_norm = get_obs_norm(self.params)
+            obs_norm = self.obs_norm.copy()
+            obs_norm.stats_increment()
             obs = env.reset()
             self.env_buffer[idxs[i]] = (env, env.sim.get_state(), obs_norm, obs)
 
@@ -68,8 +70,8 @@ class Master(object):
 
         rollout_ids, worker_id = [], 0
         for i in range(self.params['pop_size']):
-            rollout_ids += [self.workers[worker_id].do_rollout.remote(A[i, :], self.env_buffer[i], self.params['K'])]
-            worker_id    = (worker_id + 1) % self.params['num_worker']
+            rollout_ids += [self.workers[worker_id].do_rollout.remote(A[i, :], self.env_buffer[i], self.params['K'], train=True)]
+            worker_id = (worker_id + 1) % self.params['num_worker']
         results = ray.get(rollout_ids)
         
         total_rewards, is_done = [], []
@@ -78,6 +80,11 @@ class Master(object):
             is_done.append(res[1])
             self.total_steps  += res[2]
             self.env_buffer[i] = res[3]
+
+        for env_pack in self.env_buffer:
+            self.obs_norm.update(env_pack[2])
+        self.obs_norm.stats_increment()
+        self.obs_norm.clear_buffer()
 
         for i in range(self.params['pop_size']):
             if is_done[i]:
@@ -97,10 +104,11 @@ class Master(object):
             env = gym.make(self.params['env_name'])
             env._max_episode_steps = self.params['T']
             env.seed(int(eval_seeds[i]))
-            obs_norm = get_obs_norm(self.params)
+            obs_norm = self.obs_norm.copy()
+            obs_norm.stats_increment()
             obs = env.reset()
             env_pack = (env, env.sim.get_state(), obs_norm, obs)
-            rollout_ids += [self.workers[worker_id].do_rollout.remote(vec, env_pack, self.params['T'])]
+            rollout_ids += [self.workers[worker_id].do_rollout.remote(vec, env_pack, self.params['T'], train=False)]
             worker_id    = (worker_id + 1) % self.params['num_worker']
         results = ray.get(rollout_ids)
 

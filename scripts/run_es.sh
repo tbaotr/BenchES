@@ -12,7 +12,7 @@ do
     --lrate 0.003 \
     --sigma 0.05 \
     --seed $i \
-    --num_worker 8
+    --num_worker 6
 done
 
 for ((i=2016; i<=2025; i++))
@@ -27,7 +27,7 @@ do
     --lrate 0.001 \
     --sigma 0.02 \
     --seed $i \
-    --num_worker 8
+    --num_worker 6
 done
 
 for ((i=2016; i<=2025; i++))
@@ -42,7 +42,7 @@ do
     --lrate 0.005 \
     --sigma 0.15 \
     --seed $i \
-    --num_worker 8
+    --num_worker 6
 done
 
 for ((i=2016; i<=2025; i++))
@@ -57,7 +57,7 @@ do
     --lrate 0.005 \
     --sigma 0.15 \
     --seed $i \
-    --num_worker 8
+    --num_worker 6
 done
 
 for ((i=2016; i<=2025; i++))
@@ -72,6 +72,5 @@ do
     --lrate 0.003 \
     --sigma 0.05 \
     --seed $i \
-    --num_worker 8
+    --num_worker 6
 done
-

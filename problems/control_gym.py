@@ -93,7 +93,7 @@ class Master(object):
         if any(is_done):
             self.reset(np.where(is_done)[0])
 
-        return np.array(total_rewards)
+        return np.array(total_rewards), np.where(is_done)[0]
 
     def evaluate_rollouts(self, vec, num_evals=10):
 

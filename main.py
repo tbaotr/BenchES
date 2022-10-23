@@ -12,7 +12,7 @@ from utils import CSVLogger
 
 def train():
     assert params['env_name'] in ['HalfCheetah-v2', 'Ant-v2', 'Swimmer-v2', 'Hopper-v2', 'Walker2d-v2', 'Humanoid-v2']
-    assert params['stg_name'] in ['es', 'ges']
+    assert params['stg_name'] in ['es', 'ges', 'pes', 'pges']
     assert params['optim'] in ['bgd', 'sgd', 'adam']
     assert params['policy'] in ['linear']
     assert params['init_weight'] in ['zero', 'uniform']
@@ -49,8 +49,8 @@ def train():
             })
 
         X = solver.ask()
-        Y = problem.aggregate_rollouts(X)
-        solver.tell(-Y)
+        Y, done = problem.aggregate_rollouts(X)
+        solver.tell(-Y, done)
         
         iteration += 1
     
@@ -58,27 +58,27 @@ def train():
 if __name__ == '__main__':
     
     parser = argparse.ArgumentParser()
-    parser.add_argument('--env_name', type=str, default='Ant-v2')
+    parser.add_argument('--env_name', type=str, default='Swimmer-v2')
     parser.add_argument('--T', type=int, default=1000)
-    parser.add_argument('--K', type=int, default=1000)
-    parser.add_argument('--max_iters', type=int, default=600)
-    parser.add_argument('--max_steps', type=int, default=100)
+    parser.add_argument('--K', type=int, default=100)
+    parser.add_argument('--max_iters', type=int, default=100)
+    parser.add_argument('--max_steps', type=int, default=500000)
 
-    parser.add_argument('--stg_name', type=str, default='es')
-    parser.add_argument('--pop_size', type=int, default=100)
-    parser.add_argument('--lrate', type=float, default=0.001)
-    parser.add_argument('--sigma', type=float, default=0.02)
+    parser.add_argument('--stg_name', type=str, default='pges')
+    parser.add_argument('--pop_size', type=int, default=20)
+    parser.add_argument('--lrate', type=float, default=0.1)
+    parser.add_argument('--sigma', type=float, default=0.3)
 
     parser.add_argument('--alpha', type=float, default=0.5)
-    parser.add_argument('--sub_dims', type=int, default=1)
+    parser.add_argument('--sub_dims', type=int, default=4)
 
-    parser.add_argument('--optim', type=str, default='sgd')
+    parser.add_argument('--optim', type=str, default='bgd')
     parser.add_argument('--policy', type=str, default='linear')
     parser.add_argument('--init_weight', type=str, default='zero')
-    parser.add_argument('--obs_norm', type=str, default='meanstd')
+    parser.add_argument('--obs_norm', type=str, default='no')
     parser.add_argument('--fit_norm', type=str, default='div_std')
 
-    parser.add_argument('--seed', type=int, default=2020)
+    parser.add_argument('--seed', type=int, default=3)
     parser.add_argument('--num_worker', type=int, default=4)
     parser.add_argument('--log_every', type=int, default=1)
     parser.add_argument('--save_dir', type=str, default='./log')

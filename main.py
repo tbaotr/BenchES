@@ -26,18 +26,19 @@ def train():
 
     elapsed_time = 0.0
     start_time = time.time()
-    for i in range(params['max_iters']):
+    iteration = 0
+    while problem.total_steps <= params['max_steps']:
 
-        if i % params['log_every'] == 0:
+        if iteration % params['log_every'] == 0:
             elapsed_time += time.time() - start_time
 
             eval_info = problem.evaluate_rollouts(solver.mu)
-            print("Time: {} | Iteration: {} | Total_steps: {} | Reward_mean: {}".format(elapsed_time, i, problem.total_steps, eval_info['mean']))
+            print("Time: {} | Iteration: {} | Total_steps: {} | Reward_mean: {}".format(elapsed_time, iteration, problem.total_steps, eval_info['mean']))
             sys.stdout.flush()
 
             logger.writerow({
                 'time' : elapsed_time,
-                'iteration' : i,
+                'iteration' : iteration,
                 'total_steps' : problem.total_steps,
                 'reward_mean' : eval_info['mean'],
                 'reward_std' : eval_info['std'],
@@ -50,6 +51,8 @@ def train():
         X = solver.ask()
         Y = problem.aggregate_rollouts(X)
         solver.tell(-Y)
+        
+        iteration += 1
     
 
 if __name__ == '__main__':

@@ -11,6 +11,13 @@ from utils import CSVLogger
 
 
 def train():
+    assert params['env_name'] in ['HalfCheetah-v2', 'Ant-v2', 'Swimmer-v2', 'Hopper-v2', 'Walker2d-v2', 'Humanoid-v2']
+    assert params['std_name'] in ['es', 'ges']
+    assert params['optim'] in ['bgd', 'sgd', 'adam']
+    assert params['policy'] in ['linear']
+    assert params['init_weight'] in ['zero', 'uniform']
+    assert params['obs_norm'] in ['meanstd', 'no']
+    assert params['fit_norm'] in ['div_std', 'z_norm', 'rank', 'no']
 
     problem = get_problem("gym", params)
     solver = get_strategy(problem.params)
@@ -64,16 +71,17 @@ if __name__ == '__main__':
     parser.add_argument('--optim', type=str, default='sgd')
     parser.add_argument('--policy', type=str, default='linear')
     parser.add_argument('--init_weight', type=str, default='zero')
+    parser.add_argument('--obs_norm', type=str, default='meanstd')
+    parser.add_argument('--fit_norm', type=str, default='div_std')
 
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--num_worker', type=int, default=4)
     parser.add_argument('--log_every', type=int, default=1)
     parser.add_argument('--save_dir', type=str, default='./log')
-
     args = parser.parse_args()
     params = vars(args)
 
-    expr_name = "env_{}-stg_{}-lr_{}-sig_{}-pop_{}-T_{}-K_{}-al_{}-sub_{}-opt_{}-pol_{}-init_{}".format(
+    expr_name = "env_{}-stg_{}-lr_{}-sig_{}-pop_{}-T_{}-K_{}-al_{}-sub_{}-opt_{}-pol_{}-init_{}-obs_{}".format(
             args.env_name,
             args.stg_name,
             args.lrate,
@@ -86,6 +94,7 @@ if __name__ == '__main__':
             args.optim,
             args.policy,
             args.init_weight,
+            args.obs_norm,
     )
 
     save_dir = os.path.join(args.save_dir, expr_name, 'seed_{}'.format(args.seed))

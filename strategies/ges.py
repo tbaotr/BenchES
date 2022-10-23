@@ -1,5 +1,5 @@
 import numpy as np
-from utils import get_optim, get_policy, GradBuffer
+from utils import get_optim, get_policy, get_fit_norm, GradBuffer
 
  
 class GuidedES(object):
@@ -11,6 +11,7 @@ class GuidedES(object):
         self.mu = get_policy(self.params).get_weight()
         self.params['full_dims'] = len(self.mu)
         self.optimizer = get_optim(self.params)
+        self.fit_norm = get_fit_norm(self.params)
         self.grad_buffer = GradBuffer(self.params['sub_dims'], self.params['full_dims'])
 
     def ask(self):
@@ -30,7 +31,7 @@ class GuidedES(object):
         return X
 
     def tell(self, f_vals):
-        f_vals = np.array(f_vals) / np.std(f_vals)
+        f_vals = self.fit_norm(f_vals)
         grad = 1. / (self.params['pop_size'] * self.params['sigma']) * np.dot(self.eps.T, f_vals)
         self.mu = self.optimizer.update(self.mu, grad)
         self.grad_buffer.add(grad)

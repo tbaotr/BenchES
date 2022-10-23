@@ -1,7 +1,7 @@
 import ray
 import gym
 import numpy as np
-from utils import get_policy
+from utils import get_policy, get_obs_norm
 
 
 @ray.remote
@@ -17,11 +17,13 @@ class Worker(object):
 
         env = env_pack[0]
         env.sim.set_state(env_pack[1])
+        obs_norm = env_pack[2]
 
         total_reward = 0
-        obs = env_pack[2]
+        obs = env_pack[3]
         for steps in range(1, roll_len + 1):
-            action = self.policy.evaluate(obs)
+            n_obs = obs_norm.get(obs)
+            action = self.policy.evaluate(n_obs)
             action = np.clip(action, env.action_space.low[0], env.action_space.high[0])
             action = action.reshape(len(action), )
             obs, rew, done, _ = env.step(action)
@@ -30,7 +32,7 @@ class Worker(object):
             if done:
                 break
 
-        return total_reward, done, steps, (env, env.sim.get_state(), obs)
+        return total_reward, done, steps, (env, env.sim.get_state(), obs_norm, obs)
 
 
 class Master(object):
@@ -58,8 +60,9 @@ class Master(object):
             env = gym.make(self.params['env_name'])
             env._max_episode_steps = self.params['T']
             env.seed(int(new_seeds[i]))
+            obs_norm = get_obs_norm(self.params)
             obs = env.reset()
-            self.env_buffer[idxs[i]] = (env, env.sim.get_state(), obs)
+            self.env_buffer[idxs[i]] = (env, env.sim.get_state(), obs_norm, obs)
 
     def aggregate_rollouts(self, A):
 
@@ -94,8 +97,9 @@ class Master(object):
             env = gym.make(self.params['env_name'])
             env._max_episode_steps = self.params['T']
             env.seed(int(eval_seeds[i]))
+            obs_norm = get_obs_norm(self.params)
             obs = env.reset()
-            env_pack = (env, env.sim.get_state(), obs)
+            env_pack = (env, env.sim.get_state(), obs_norm, obs)
             rollout_ids += [self.workers[worker_id].do_rollout.remote(vec, env_pack, self.params['T'])]
             worker_id    = (worker_id + 1) % self.params['num_worker']
         results = ray.get(rollout_ids)

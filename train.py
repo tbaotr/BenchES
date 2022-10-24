@@ -10,7 +10,7 @@ from strategies import get_strategy
 from utils import CSVLogger
 
 
-def train():
+def run():
     assert params['env_name'] in ['HalfCheetah-v2', 'Ant-v2', 'Swimmer-v2', 'Hopper-v2', 'Walker2d-v2', 'Humanoid-v2']
     assert params['stg_name'] in ['es', 'ges', 'pes', 'pges']
     assert params['optim'] in ['bgd', 'sgd', 'adam']
@@ -70,7 +70,7 @@ if __name__ == '__main__':
     parser.add_argument('--sigma', type=float, default=0.3)
 
     parser.add_argument('--alpha', type=float, default=0.5)
-    parser.add_argument('--sub_dims', type=int, default=4)
+    parser.add_argument('--sub_dims', type=int, default=1)
 
     parser.add_argument('--optim', type=str, default='bgd')
     parser.add_argument('--policy', type=str, default='linear')
@@ -78,7 +78,7 @@ if __name__ == '__main__':
     parser.add_argument('--obs_norm', type=str, default='no')
     parser.add_argument('--fit_norm', type=str, default='div_std')
 
-    parser.add_argument('--seed', type=int, default=3)
+    parser.add_argument('--seed', type=int, default=5)
     parser.add_argument('--num_worker', type=int, default=4)
     parser.add_argument('--log_every', type=int, default=1)
     parser.add_argument('--save_dir', type=str, default='./log')
@@ -115,4 +115,4 @@ if __name__ == '__main__':
     )
 
     ray.init()
-    train()
+    run()

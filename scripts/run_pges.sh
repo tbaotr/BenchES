@@ -2,7 +2,7 @@
 
 for ((i=2016; i<=2025; i++))
 do
-    python main.py \
+    python train.py \
     --env_name "HalfCheetah-v2" \
     --T 1000 \
     --K 100 \
@@ -19,7 +19,7 @@ done
 
 for ((i=2016; i<=2025; i++))
 do
-    python main.py \
+    python train.py \
     --env_name "Ant-v2" \
     --T 1000 \
     --K 100 \
@@ -36,7 +36,7 @@ done
 
 for ((i=2016; i<=2025; i++))
 do
-    python main.py \
+    python train.py \
     --env_name "Swimmer-v2" \
     --T 1000 \
     --K 100 \
@@ -53,7 +53,7 @@ done
 
 for ((i=2016; i<=2025; i++))
 do
-    python main.py \
+    python train.py \
     --env_name "Hopper-v2" \
     --T 1000 \
     --K 100 \
@@ -70,7 +70,7 @@ done
 
 for ((i=2016; i<=2025; i++))
 do
-    python main.py \
+    python train.py \
     --env_name "Walker2d-v2" \
     --T 1000 \
     --K 100 \

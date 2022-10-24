@@ -1,4 +1,4 @@
-# BenchES
+# Baseline for Evolutionary Strategies
 
 ## Set up
 

@@ -68,6 +68,11 @@ class Master(object):
 
     def aggregate_rollouts(self, A):
 
+        if len(A) > len(self.env_buffer):
+            idxs = np.arange(len(self.env_buffer), len(A))
+            self.env_buffer += [()] * (len(A) - len(self.env_buffer))
+            self.reset(idxs)
+
         rollout_ids, worker_id = [], 0
         for i in range(self.params['pop_size']):
             rollout_ids += [self.workers[worker_id].do_rollout.remote(A[i, :], self.env_buffer[i], self.params['K'], train=True)]

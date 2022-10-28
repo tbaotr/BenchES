@@ -12,9 +12,9 @@ from utils import CSVLogger
 
 def run():
     assert params['env_name'] in ['HalfCheetah-v2', 'Ant-v2', 'Swimmer-v2', 'Hopper-v2', 'Walker2d-v2', 'Humanoid-v2']
-    assert params['stg_name'] in ['es', 'ges', 'pes', 'pges']
+    assert params['stg_name'] in ['es', 'ges', 'asebo', 'pes', 'pges']
     assert params['optim'] in ['bgd', 'sgd', 'adam']
-    assert params['policy'] in ['linear']
+    assert params['policy'] in ['linear', 'toeplitz']
     assert params['init_weight'] in ['zero', 'uniform']
     assert params['obs_norm'] in ['meanstd', 'no']
     assert params['fit_norm'] in ['div_std', 'z_score', 'rank', 'no']
@@ -46,6 +46,7 @@ def run():
                 'reward_min' : eval_info['min'],
                 'alpha' : solver.params['alpha'],
                 'sub_dims' : solver.params['sub_dims'],
+                'pop_size' : solver.params['pop_size'],
             })
 
         X = solver.ask()
@@ -58,25 +59,33 @@ def run():
 if __name__ == '__main__':
     
     parser = argparse.ArgumentParser()
-    parser.add_argument('--env_name', type=str, default='Swimmer-v2')
+    parser.add_argument('--env_name', type=str, default='HalfCheetah-v2')
     parser.add_argument('--T', type=int, default=1000)
-    parser.add_argument('--K', type=int, default=100)
+    parser.add_argument('--K', type=int, default=1000)
     parser.add_argument('--max_iters', type=int, default=100)
-    parser.add_argument('--max_steps', type=int, default=500000)
+    parser.add_argument('--max_steps', type=int, default=20000000)
 
-    parser.add_argument('--stg_name', type=str, default='pges')
-    parser.add_argument('--pop_size', type=int, default=20)
-    parser.add_argument('--lrate', type=float, default=0.1)
-    parser.add_argument('--sigma', type=float, default=0.3)
+    parser.add_argument('--stg_name', type=str, default='asebo')
+    parser.add_argument('--pop_size', type=int, default=400)
+    parser.add_argument('--lrate', type=float, default=0.02)
+    parser.add_argument('--sigma', type=float, default=0.02)
 
-    parser.add_argument('--alpha', type=float, default=0.5)
+    # Guiding Subspace
+    parser.add_argument('--alpha', type=float, default=1.0)
     parser.add_argument('--sub_dims', type=int, default=1)
 
-    parser.add_argument('--optim', type=str, default='bgd')
+    # Asebo
+    parser.add_argument('--warm_up', type=int, default=70)
+    parser.add_argument('--threshold', type=float, default=0.995)
+    parser.add_argument('--min', type=int, default=10)
+    parser.add_argument('--decay', type=float, default=0.995)
+
+    parser.add_argument('--optim', type=str, default='adam')
     parser.add_argument('--policy', type=str, default='linear')
+    parser.add_argument('--h_dim', type=int, default=32)
     parser.add_argument('--init_weight', type=str, default='zero')
     parser.add_argument('--obs_norm', type=str, default='no')
-    parser.add_argument('--fit_norm', type=str, default='div_std')
+    parser.add_argument('--fit_norm', type=str, default='z_score')
 
     parser.add_argument('--seed', type=int, default=5)
     parser.add_argument('--num_worker', type=int, default=4)
@@ -109,7 +118,7 @@ if __name__ == '__main__':
     logger = CSVLogger(
         fieldnames = [
             'time', 'iteration', 'total_steps', 'reward_mean', 'reward_std', 
-            'reward_max', 'reward_min', 'alpha', 'sub_dims',
+            'reward_max', 'reward_min', 'alpha', 'sub_dims', 'pop_size',
         ],
         filename = os.path.join(save_dir, 'record.csv')
     )

@@ -3,11 +3,14 @@ from utils import get_optim, get_policy, get_fit_norm, GradBuffer
 
  
 class GuidedPersistentES(object):
+
     def __init__(self, params):
+    
         self.params = params
         self.rng = np.random.RandomState(params['seed'])
 
     def initialize(self):
+    
         self.mu = get_policy(self.params).get_weight()
         self.params['full_dims'] = len(self.mu)
         self.optimizer = get_optim(self.params)
@@ -16,6 +19,7 @@ class GuidedPersistentES(object):
         self.eps_accums = np.zeros((self.params['pop_size'], self.params['full_dims']))
 
     def ask(self):
+    
         if self.grad_buffer.size < self.grad_buffer.max_size:
             a = np.sqrt(self.params['alpha'] / self.params['full_dims'])
             eps = a * self.rng.randn(self.params['pop_size']//2, self.params['full_dims'])
@@ -33,6 +37,7 @@ class GuidedPersistentES(object):
         return X
 
     def tell(self, f_vals, done):
+    
         f_vals = self.fit_norm(f_vals)
         grad = 1. / (self.params['pop_size'] * self.params['sigma']) * np.dot(self.eps_accums.T, f_vals)
         self.mu = self.optimizer.update(self.mu, grad)

@@ -1,5 +1,5 @@
 from .optimizers import BasicGD, SGD, Adam
-from .policies import LinearPolicy 
+from .policies import LinearPolicy, ToeplitzPolicy
 from .obs_norm import MeanStdFilter, NoFilter
 from .fit_norm import divide_std, compute_z_score, compute_centered_ranks
 from .buffer import GradBuffer
@@ -20,6 +20,8 @@ def get_policy(params):
 
     if params['policy'] == 'linear':
         return LinearPolicy(params)
+    elif params['policy'] == 'toeplitz':
+        return ToeplitzPolicy(params)
 
 
 def get_obs_norm(params):

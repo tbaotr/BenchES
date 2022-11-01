@@ -1,5 +1,6 @@
 ray
 numpy
+scipy
 gym==0.15.3
 matplotlib
 pandas

@@ -12,11 +12,12 @@ from utils import CSVLogger
 
 def run():
     assert params['env_name'] in ['HalfCheetah-v2', 'Ant-v2', 'Swimmer-v2', 'Hopper-v2', 'Walker2d-v2', 'Humanoid-v2']
-    assert params['stg_name'] in ['es', 'ges', 'asebo', 'pes', 'pges']
+    assert params['stg_name'] in ['es', 'ges', 'asebo', 'pes', 'pges', 'pasebo']
     assert params['optim'] in ['bgd', 'sgd', 'adam']
     assert params['policy'] in ['linear', 'toeplitz']
     assert params['init_weight'] in ['zero', 'uniform']
     assert params['obs_norm'] in ['meanstd', 'no']
+    assert params['act_norm'] in ['clip', 'no']
     assert params['fit_norm'] in ['div_std', 'z_score', 'rank', 'no']
     assert not params['pop_size'] & 1
 
@@ -33,7 +34,7 @@ def run():
             elapsed_time += time.time() - start_time
 
             eval_info = problem.evaluate_rollouts(solver.mu)
-            print("Time: {} | Iteration: {} | Total_steps: {} | Reward_mean: {}".format(elapsed_time, iteration, problem.total_steps, eval_info['mean']))
+            print("Time: {} | Iteration: {} | Total_steps: {} | Reward_mean: {} | Pop_size: {}".format(elapsed_time, iteration, problem.total_steps, eval_info['mean'], params['pop_size']))
             sys.stdout.flush()
 
             logger.writerow({
@@ -59,14 +60,14 @@ def run():
 if __name__ == '__main__':
     
     parser = argparse.ArgumentParser()
-    parser.add_argument('--env_name', type=str, default='HalfCheetah-v2')
+    parser.add_argument('--env_name', type=str, default='Swimmer-v2')
     parser.add_argument('--T', type=int, default=1000)
     parser.add_argument('--K', type=int, default=1000)
     parser.add_argument('--max_iters', type=int, default=100)
     parser.add_argument('--max_steps', type=int, default=20000000)
 
     parser.add_argument('--stg_name', type=str, default='asebo')
-    parser.add_argument('--pop_size', type=int, default=400)
+    parser.add_argument('--pop_size', type=int, default=80)
     parser.add_argument('--lrate', type=float, default=0.02)
     parser.add_argument('--sigma', type=float, default=0.02)
 
@@ -74,10 +75,12 @@ if __name__ == '__main__':
     parser.add_argument('--alpha', type=float, default=1.0)
     parser.add_argument('--sub_dims', type=int, default=1)
 
+    # Adaptive Pop_size
+    parser.add_argument('--min_pop_size', type=int, default=10)
+
     # Asebo
-    parser.add_argument('--warm_up', type=int, default=70)
+    parser.add_argument('--warm_up', type=int, default=8)
     parser.add_argument('--threshold', type=float, default=0.995)
-    parser.add_argument('--min', type=int, default=10)
     parser.add_argument('--decay', type=float, default=0.995)
 
     parser.add_argument('--optim', type=str, default='adam')
@@ -85,10 +88,11 @@ if __name__ == '__main__':
     parser.add_argument('--h_dim', type=int, default=32)
     parser.add_argument('--init_weight', type=str, default='zero')
     parser.add_argument('--obs_norm', type=str, default='no')
+    parser.add_argument('--act_norm', type=str, default='clip')
     parser.add_argument('--fit_norm', type=str, default='z_score')
 
     parser.add_argument('--seed', type=int, default=5)
-    parser.add_argument('--num_worker', type=int, default=4)
+    parser.add_argument('--num_worker', type=int, default=2)
     parser.add_argument('--log_every', type=int, default=1)
     parser.add_argument('--save_dir', type=str, default='./log')
     args = parser.parse_args()

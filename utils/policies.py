@@ -113,4 +113,4 @@ class ToeplitzPolicy(object):
         z1 = np.tanh(np.dot(self.W1, X) + self.b1)
         z2 = np.tanh(np.dot(self.W2, z1) + self.b2)
 
-        return(np.tanh(np.dot(self.W3, z2)))
+        return np.dot(self.W3, z2)

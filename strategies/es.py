@@ -17,7 +17,7 @@ class SimpleES(object):
         self.fit_norm = get_fit_norm(self.params)
  
     def ask(self):
-    
+
         eps = self.rng.randn(self.params['pop_size']//2, self.params['full_dims'])
         self.eps = np.concatenate([eps, -eps])
         
@@ -25,7 +25,7 @@ class SimpleES(object):
         return X
  
     def tell(self, f_vals, done):
-    
+
         f_vals = self.fit_norm(f_vals)
         grad = 1. / (self.params['pop_size'] * self.params['sigma']) * np.dot(self.eps.T, f_vals)
         self.mu = self.optimizer.update(self.mu, grad)

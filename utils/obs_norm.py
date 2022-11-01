@@ -110,7 +110,7 @@ class MeanStdFilter(object):
         other.rs = self.rs.copy()
         other.buffer = self.buffer.copy()
         return other
-
+        
     def stats_increment(self):
         self.mean = self.rs.mean
         self.std = self.rs.std

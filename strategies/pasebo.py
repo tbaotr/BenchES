@@ -6,7 +6,7 @@ from scipy.linalg import cholesky
 from numpy.linalg import LinAlgError
 
 
-class ASEBO(object):
+class PASEBO(object):
 
     def __init__(self, params):
     
@@ -19,15 +19,35 @@ class ASEBO(object):
         self.params['full_dims'] = len(self.mu)
         self.optimizer = get_optim(self.params)
         self.fit_norm = get_fit_norm(self.params)
+        self.eps_accums = np.zeros((self.params['pop_size'], self.params['full_dims']))
 
     def sync(self, new_pop):
 
         if new_pop > self.params['pop_size']:
-            self.params['pop_size'] = new_pop 
+
+            t = (new_pop - self.params['pop_size'])//2
+            self.eps_accums = np.concatenate([
+                self.eps_accums[:self.params['pop_size']//2],
+                np.zeros((t, self.params['full_dims'])),
+                self.eps_accums[self.params['pop_size']//2:],
+                np.zeros((t, self.params['full_dims'])),
+            ], axis=0)
+
+            self.params['pop_size'] = new_pop
+
         elif new_pop < self.params['pop_size']:
-            self.params['pop_size'] -= min(len(self.idx_done), (self.params['pop_size'] - new_pop))
- 
- 
+            
+            t = min(len(self.idx_done), (self.params['pop_size']-new_pop))//2
+
+            idx_pos, idx_neg = [], []
+            for i in range(t):
+                idx_pos.append(self.idx_done[i])
+                idx_neg.append(self.idx_done[i+len(self.idx_done)//2])
+
+            self.eps_accums = np.delete(self.eps_accums, idx_pos+idx_neg, axis=0)
+
+            self.params['pop_size'] -= t*2
+
     def ask(self):
     
         if self.optimizer.gen_counter >= self.params['warm_up'] - 2:
@@ -68,6 +88,8 @@ class ASEBO(object):
         eps /= np.linalg.norm(eps, axis =-1)[:, np.newaxis]
 
         self.eps = np.concatenate([eps, -eps])
+        print(self.eps_accums.shape, self.eps.shape)
+        self.eps_accums += self.eps
         
         X = self.mu.reshape(1, self.params['full_dims']) + self.eps
         return X
@@ -91,3 +113,6 @@ class ASEBO(object):
         grad /= (np.linalg.norm(grad) / self.params['full_dims'] + 1e-8)
 
         self.mu = self.optimizer.update(self.mu, grad)
+
+        for idx in self.idx_done:
+            self.eps_accums[idx] = np.zeros((1, self.params['full_dims']))

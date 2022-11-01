@@ -34,7 +34,7 @@ def run():
             elapsed_time += time.time() - start_time
 
             eval_info = problem.evaluate_rollouts(solver.mu)
-            print("Time: {} | Iteration: {} | Total_steps: {} | Reward_mean: {} | Pop_size: {}".format(elapsed_time, iteration, problem.total_steps, eval_info['mean'], params['pop_size']))
+            print("Time: {} | Iteration: {} | Total_steps: {} | Reward_mean: {}".format(elapsed_time, iteration, problem.total_steps, eval_info['mean'], params['pop_size']))
             sys.stdout.flush()
 
             logger.writerow({
